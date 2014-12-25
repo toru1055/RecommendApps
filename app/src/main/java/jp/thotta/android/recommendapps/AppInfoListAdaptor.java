@@ -24,16 +24,17 @@ public class AppInfoListAdaptor extends ArrayAdapter<AppInfo> {
             LayoutInflater layoutInflater =
                     (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.app_record, null);
-            AppInfo appInfo = getItem(position);
-            ImageView appIcon = (ImageView) convertView.findViewById(R.id.imageView_applicationIcon);
-            appIcon.setImageDrawable(appInfo.applicationIcon);
-            TextView appName = (TextView) convertView.findViewById(R.id.textView_applicationName);
-            appName.setText(appInfo.applicationName);
-            TextView packageName = (TextView) convertView.findViewById(R.id.textView_packageName);
-            packageName.setText(appInfo.packageName);
-            TextView useSecond = (TextView) convertView.findViewById(R.id.textView_useSecond);
-            useSecond.setText(String.valueOf(appInfo.useSecond));
         }
+        AppInfo appInfo = getItem(position);
+        ImageView appIcon = (ImageView) convertView.findViewById(R.id.imageView_applicationIcon);
+        appIcon.setImageDrawable(appInfo.applicationIcon);
+        TextView appName = (TextView) convertView.findViewById(R.id.textView_applicationName);
+        appName.setText(appInfo.applicationName);
+        TextView packageName = (TextView) convertView.findViewById(R.id.textView_packageName);
+        packageName.setText(appInfo.packageName);
+        TextView useSecond = (TextView) convertView.findViewById(R.id.textView_useSecond);
+        useSecond.setText(String.valueOf(appInfo.useSecond));
+
         return convertView;
     }
 }

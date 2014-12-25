@@ -98,7 +98,9 @@ public class UsageHistory {
         Cursor cursor = db.rawQuery(sql, null);
         while(cursor.moveToNext()) {
             AppInfo appInfo = new AppInfo(cursor.getString(0), cursor.getInt(1), pm);
-            ranking.add(appInfo);
+            if(appInfo.isApplicationInfoEnable) {
+                ranking.add(appInfo);
+            }
         }
         return ranking;
     }
@@ -111,9 +113,13 @@ public class UsageHistory {
                 "GROUP BY package_name " +
                 "ORDER BY SUM(use_second) DESC";
         Cursor cursor = db.rawQuery(sql, null);
+        int rank = 0;
         while(cursor.moveToNext()) {
+            Log.d("RecommendApps", "[UsageHistory.getOverallRanking] [" + (rank++) + "] pk=" + cursor.getString(0) + ", ut=" + cursor.getInt(1));
             AppInfo appInfo = new AppInfo(cursor.getString(0), cursor.getInt(1), pm);
-            ranking.add(appInfo);
+            if(appInfo.isApplicationInfoEnable) {
+                ranking.add(appInfo);
+            }
         }
         return ranking;
     }
