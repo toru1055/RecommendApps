@@ -13,7 +13,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.List;
 
 
 public class MainActivity extends Activity {
@@ -27,38 +30,34 @@ public class MainActivity extends Activity {
         dbHelper = new MainDBHelper(this);
         this.startService(new Intent(this, RegisterReceiverService.class));
         this.startService(new Intent(this, RecorderService.class));
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        LinearLayout appRanking = (LinearLayout) findViewById(R.id.layout_ranking);
-        if(appRanking.getChildCount() > 0) {
-            appRanking.removeViews(0, appRanking.getChildCount());
-        }
-        setAppRanking(appRanking, dbHelper.getReadableDatabase());
+        ListView listView = (ListView) findViewById(R.id.listView);
+        List<AppInfo> appRanking = UsageHistory.getRanking(
+                dbHelper.getReadableDatabase(),
+                getPackageManager(),
+                0,
+                0
+        );
+        AppInfoListAdaptor adaptor = new AppInfoListAdaptor(this, appRanking);
+        listView.setAdapter(adaptor);
     }
 
     private void setAppRanking(LinearLayout layout, SQLiteDatabase db) {
-        String sql = "SELECT app_name, weekday, start_hour, SUM(use_second) " +
-                "FROM usage_history " +
-                "GROUP BY app_name, weekday, start_hour " +
-                "ORDER BY SUM(use_second) DESC";
-        //String[] cols = {"app_name", "weekday", "start_hour", "use_second"};
-        //Cursor cursor = db.query("usage_history", cols, null, null, null, null, null);
-        Cursor cursor = db.rawQuery(sql, null);
-        while(cursor.moveToNext()) {
+        List<AppInfo> appRanking = UsageHistory.getRanking(db, getPackageManager(), 0, 0);
+        for(AppInfo appInfo : appRanking) {
             StringBuilder text = new StringBuilder();
             TextView v = new TextView(this);
-            text.append(cursor.getString(0));
-            text.append("," + cursor.getInt(1));
-            text.append("," + cursor.getInt(2));
-            text.append("," + cursor.getInt(3));
+            text.append(appInfo.applicationName);
+            text.append(", " + appInfo.packageName);
+            text.append(", " + appInfo.useSecond);
             v.setText(text);
             layout.addView(v, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT)
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT)
             );
         }
     }

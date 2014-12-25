@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class MainDBHelper extends SQLiteOpenHelper {
     public MainDBHelper(Context context) {
-        super(context, "recommend_apps.db", null, 4);
+        super(context, "recommend_apps.db", null, 5);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class MainDBHelper extends SQLiteOpenHelper {
 
     private static void createUsageHistory(SQLiteDatabase db) {
         String sql = "CREATE TABLE usage_history(" +
-                "app_name TEXT," +
+                "package_name TEXT," +
                 "lat REAL, " +
                 "lon REAL," +
                 "weekday INTEGER DEFAULT (strftime('%w', 'now'))," +

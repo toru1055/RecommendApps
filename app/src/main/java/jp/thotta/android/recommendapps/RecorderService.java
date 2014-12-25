@@ -50,6 +50,8 @@ public class RecorderService extends Service implements LocationListener {
         super.onStartCommand(intent, flags, startId);
         Log.d("RecommendApps", "[RecorderService.onStartCommand]Received start id " + startId + ": " + intent);
         Log.d("RecommendApps", "[RecorderService.onStartCommand] Lat=" + lat + ", Lon=" + lon);
+
+        //TODO: SCREEN_ONであることをチェックする
         execTask();
         scheduleNext();
         return START_STICKY;
@@ -57,25 +59,25 @@ public class RecorderService extends Service implements LocationListener {
 
     private void execTask() {
         ActivityManager activityManager = (ActivityManager) getSystemService(Service.ACTIVITY_SERVICE);
-        String className = activityManager.getRunningAppProcesses().get(0).processName;
-        Log.d("RecommendApps", "[RecorderService.execTask] className: " + className);
+        String packageName = activityManager.getRunningAppProcesses().get(0).processName;
+        Log.d("RecommendApps", "[RecorderService.execTask] packageName: " + packageName);
         if(usageHistory != null) {
-            if(!usageHistory.isSameApp(className)) {
-                Log.d("RecommendApps", "[RecorderService.execTask] className is changed.");
+            if(!usageHistory.isSameApp(packageName)) {
+                Log.d("RecommendApps", "[RecorderService.execTask] packageName is changed.");
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
                 if(lat == 0.0 && lon == 0.0) {
                     usageHistory.update(db);
                 } else {
                     usageHistory.update(db, lat, lon);
                 }
-                usageHistory = UsageHistory.create(className, lat, lon, db);
+                usageHistory = UsageHistory.create(packageName, lat, lon, db);
             } else {
-                Log.d("RecommendApps", "[RecorderService.execTask] className is NOT changed.");
+                Log.d("RecommendApps", "[RecorderService.execTask] packageName is NOT changed.");
             }
         } else {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             Log.d("RecommendApps", "[RecorderService.execTask] usageHistory is NULL");
-            usageHistory = UsageHistory.create(className, lat, lon, db);
+            usageHistory = UsageHistory.create(packageName, lat, lon, db);
         }
     }
 
