@@ -69,6 +69,7 @@ public class RecorderService extends Service {
     private void execTask(int startId) {
         ActivityManager activityManager = (ActivityManager) getSystemService(Service.ACTIVITY_SERVICE);
         String packageName = activityManager.getRunningAppProcesses().get(0).processName;
+        packageName = packageName.replaceFirst(":.*$", "");
         double lat = myLocationListener.lat;
         double lon = myLocationListener.lon;
         Log.d("RecommendApps", "[RecorderService.execTask] Lat=" + lat + ", Lon=" + lon);
@@ -145,6 +146,7 @@ public class RecorderService extends Service {
         } else {
             Log.d("RecommendApps", "[RecorderService.onDestroy] usageHistory was NULL.");
         }
+        dbHelper.close();
         locationManager.removeUpdates(myLocationListener);
     }
 

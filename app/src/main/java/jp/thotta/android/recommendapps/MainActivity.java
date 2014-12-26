@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
                 lat,
                 lon
         );
+        // TODO: Filter appRanking to delete Apps listed in No-Show list.(Use SharedPreferences);
         AppInfoListAdaptor adaptor = new AppInfoListAdaptor(this, appRanking);
         listView.setAdapter(adaptor);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -107,6 +108,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d("RecommendApps", "[MainActivity.onDestroy] method was called.");
+        dbHelper.close();
     }
 
     @Override
