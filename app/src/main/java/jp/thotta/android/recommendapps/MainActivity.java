@@ -20,11 +20,13 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.LinkedList;
 import java.util.List;
 
 
 public class MainActivity extends Activity {
     private MainDBHelper dbHelper;
+    private NoShowAppList noShowAppList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +36,7 @@ public class MainActivity extends Activity {
         dbHelper = new MainDBHelper(this);
         this.startService(new Intent(this, RegisterReceiverService.class));
         this.startService(new Intent(this, RecorderService.class));
+        noShowAppList = new NoShowAppList(this);
     }
 
     @Override
@@ -53,6 +56,7 @@ public class MainActivity extends Activity {
                 lat,
                 lon
         );
+        appRanking = filterNoShowApps(appRanking);
         // TODO: Filter appRanking to delete Apps listed in No-Show list.(Use SharedPreferences);
         AppInfoListAdaptor adaptor = new AppInfoListAdaptor(this, appRanking);
         listView.setAdapter(adaptor);
@@ -65,19 +69,36 @@ public class MainActivity extends Activity {
                     startActivity(appInfo.applicationIntent);
                 } catch(NullPointerException e) {
                     Log.d("RecommendApps", "[MainActivity.listView.onItemClick] NullPointerException: " + e.getMessage());
-                    showCantOpenErrorDialog();
+                    showCantOpenErrorDialog(appInfo.packageName);
                 }
             }
         });
     }
 
-    private void showCantOpenErrorDialog() {
+    private List<AppInfo> filterNoShowApps(List<AppInfo> appRanking) {
+        List<AppInfo> appRankingFiltered = new LinkedList<AppInfo>();
+        for(AppInfo appInfo : appRanking) {
+            if(!noShowAppList.isNoShow(appInfo.packageName)) {
+                appRankingFiltered.add(appInfo);
+            }
+        }
+        return appRankingFiltered;
+    }
+
+
+
+    private void showCantOpenErrorDialog(final String packageName) {
+        showNoShowDialog(packageName, "Can't open this app. Add to No-Show List?");
+    }
+
+    private void showNoShowDialog(final String packageName, String dialogMessage) {
         new AlertDialog.Builder(MainActivity.this)
-                .setTitle("Can't open this app. Add to No-Show List?")
+                .setTitle(dialogMessage)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
+                        noShowAppList.add(packageName);
+                        MainActivity.this.recreate();
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -86,22 +107,6 @@ public class MainActivity extends Activity {
 
                     }
                 }).show();
-    }
-
-    private void setAppRanking(LinearLayout layout, SQLiteDatabase db) {
-        List<AppInfo> appRanking = UsageHistory.getRanking(db, getPackageManager(), 0, 0);
-        for(AppInfo appInfo : appRanking) {
-            StringBuilder text = new StringBuilder();
-            TextView v = new TextView(this);
-            text.append(appInfo.applicationName);
-            text.append(", " + appInfo.packageName);
-            text.append(", " + appInfo.useSecond);
-            v.setText(text);
-            layout.addView(v, new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT)
-            );
-        }
     }
 
     @Override
