@@ -49,12 +49,12 @@ public class RecorderService extends Service {
 
 
         //TODO: SCREEN_ONであることをチェックする
-        execTask();
+        execTask(startId);
         scheduleNext();
         return START_STICKY;
     }
 
-    private void execTask() {
+    private void execTask(int startId) {
         ActivityManager activityManager = (ActivityManager) getSystemService(Service.ACTIVITY_SERVICE);
         String packageName = activityManager.getRunningAppProcesses().get(0).processName;
         double lat = myLocationListener.lat;
@@ -65,20 +65,31 @@ public class RecorderService extends Service {
             if(!usageHistory.isSameApp(packageName)) {
                 Log.d("RecommendApps", "[RecorderService.execTask] packageName is changed.");
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
-                if(lat == 0.0 && lon == 0.0) {
-                    usageHistory.update(db);
-                } else {
-                    usageHistory.update(db, lat, lon);
-                }
+                updateUsageHistory(db);
                 usageHistory = UsageHistory.create(packageName, lat, lon, db);
             } else {
                 Log.d("RecommendApps", "[RecorderService.execTask] packageName is NOT changed.");
+                if(startId % 6 == 3) {
+                    SQLiteDatabase db = dbHelper.getWritableDatabase();
+                    updateUsageHistory(db);
+                }
             }
         } else {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             Log.d("RecommendApps", "[RecorderService.execTask] usageHistory is NULL");
             usageHistory = UsageHistory.create(packageName, lat, lon, db);
         }
+    }
+
+    private void updateUsageHistory(SQLiteDatabase db) {
+        if(myLocationListener.available) {
+            double lat = myLocationListener.lat;
+            double lon = myLocationListener.lon;
+            usageHistory.update(db, lat, lon);
+        } else {
+            usageHistory.update(db);
+        }
+
     }
 
     private void scheduleNext() {
