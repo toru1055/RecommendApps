@@ -15,13 +15,12 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
-public class RecorderService extends Service implements LocationListener {
+public class RecorderService extends Service {
     static final long DURATION_MILLS = 1000 * 10; // 10 sec.
     private MainDBHelper dbHelper;
     private UsageHistory usageHistory;
-    private double lat;
-    private double lon;
     private LocationManager locationManager;
+    private MyLocationListener myLocationListener;
 
     public RecorderService() {
         Log.d("RecommendApps", "[RecorderService] Constructor was called.");
@@ -37,19 +36,17 @@ public class RecorderService extends Service implements LocationListener {
         //registerReceiver(mReceiver, intentFilter);
         this.dbHelper = new MainDBHelper(this);
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-        criteria.setPowerRequirement(Criteria.POWER_LOW);
-        String provider = locationManager.getBestProvider(criteria, true);
+        myLocationListener = MyLocationListener.getStaticLocation(this);
+        String provider = MyLocationListener.getBestProvider(locationManager);
         Log.d("RecommendApps", "[RecorderService.onCreate] Location Provider: " + provider);
-        locationManager.requestLocationUpdates(provider, 0, 0, this);
+        locationManager.requestLocationUpdates(provider, 0, 100, myLocationListener);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         Log.d("RecommendApps", "[RecorderService.onStartCommand]Received start id " + startId + ": " + intent);
-        Log.d("RecommendApps", "[RecorderService.onStartCommand] Lat=" + lat + ", Lon=" + lon);
+
 
         //TODO: SCREEN_ONであることをチェックする
         execTask();
@@ -60,6 +57,9 @@ public class RecorderService extends Service implements LocationListener {
     private void execTask() {
         ActivityManager activityManager = (ActivityManager) getSystemService(Service.ACTIVITY_SERVICE);
         String packageName = activityManager.getRunningAppProcesses().get(0).processName;
+        double lat = myLocationListener.lat;
+        double lon = myLocationListener.lon;
+        Log.d("RecommendApps", "[RecorderService.execTask] Lat=" + lat + ", Lon=" + lon);
         Log.d("RecommendApps", "[RecorderService.execTask] packageName: " + packageName);
         if(usageHistory != null) {
             if(!usageHistory.isSameApp(packageName)) {
@@ -110,34 +110,20 @@ public class RecorderService extends Service implements LocationListener {
         );
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
-        locationManager.removeUpdates(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        if(!myLocationListener.available) {
+            usageHistory.update(db);
+        } else {
+            double lat = myLocationListener.lat;
+            double lon = myLocationListener.lon;
+            usageHistory.update(db, lat, lon);
+        }
+        locationManager.removeUpdates(myLocationListener);
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        this.lat = location.getLatitude();
-        this.lon = location.getLongitude();
-        Log.d("RecommendApps", "[RecorderService.onLocationChanged] Lat=" + lat + ", Lon=" + lon);
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.d("RecommendApps", "[RecorderService.onStatusChanged]" + provider);
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-        Log.d("RecommendApps", "[RecorderService.onProviderEnabled]" + provider);
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        Log.d("RecommendApps", "[RecorderService.onProviderDisabled] " + provider);
     }
 }

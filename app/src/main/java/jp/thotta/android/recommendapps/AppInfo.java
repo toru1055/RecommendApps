@@ -1,5 +1,6 @@
 package jp.thotta.android.recommendapps;
 
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -12,6 +13,7 @@ public class AppInfo {
     public int useSecond;
     public String applicationName;
     public Drawable applicationIcon;
+    public Intent applicationIntent;
     public boolean isApplicationInfoEnable = false;
 
     public AppInfo(String packageName, int useSecond, PackageManager pm) {
@@ -21,6 +23,7 @@ public class AppInfo {
             ApplicationInfo applicationInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
             this.applicationName = applicationInfo.loadLabel(pm).toString();
             this.applicationIcon = pm.getApplicationIcon(packageName);
+            this.applicationIntent = pm.getLaunchIntentForPackage(packageName);
             isApplicationInfoEnable = true;
         } catch (PackageManager.NameNotFoundException e) {
             isApplicationInfoEnable = false;

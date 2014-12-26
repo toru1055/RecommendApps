@@ -19,6 +19,7 @@ public class RegisterReceiverService extends Service {
         intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_SCREEN_ON);
         intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        intentFilter.addAction(Intent.ACTION_USER_PRESENT);
         mReceiver = new ScreenReceiver();
     }
 

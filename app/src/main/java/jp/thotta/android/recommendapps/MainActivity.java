@@ -1,7 +1,9 @@
 package jp.thotta.android.recommendapps;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
@@ -11,7 +13,9 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -35,15 +39,52 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        MyLocationListener myLocationListener = MyLocationListener.getStaticLocation(this);
+        double lat = 0.0;
+        double lon = 0.0;
+        if(myLocationListener.available) {
+            lat = myLocationListener.lat;
+            lon = myLocationListener.lon;
+        }
         ListView listView = (ListView) findViewById(R.id.listView);
         List<AppInfo> appRanking = UsageHistory.getRanking(
                 dbHelper.getReadableDatabase(),
                 getPackageManager(),
-                0,
-                0
+                lat,
+                lon
         );
         AppInfoListAdaptor adaptor = new AppInfoListAdaptor(this, appRanking);
         listView.setAdapter(adaptor);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ListView lv = (ListView) parent;
+                AppInfo appInfo = (AppInfo) lv.getItemAtPosition(position);
+                try {
+                    startActivity(appInfo.applicationIntent);
+                } catch(NullPointerException e) {
+                    Log.d("RecommendApps", "[MainActivity.listView.onItemClick] NullPointerException: " + e.getMessage());
+                    showCantOpenErrorDialog();
+                }
+            }
+        });
+    }
+
+    private void showCantOpenErrorDialog() {
+        new AlertDialog.Builder(MainActivity.this)
+                .setTitle("Can't open this app. Add to No-Show List?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                }).show();
     }
 
     private void setAppRanking(LinearLayout layout, SQLiteDatabase db) {
