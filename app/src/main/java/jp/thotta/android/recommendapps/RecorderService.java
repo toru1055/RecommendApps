@@ -1,7 +1,9 @@
 package jp.thotta.android.recommendapps;
 
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -11,8 +13,10 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.util.Log;
 
 public class RecorderService extends Service {
@@ -47,11 +51,19 @@ public class RecorderService extends Service {
         super.onStartCommand(intent, flags, startId);
         Log.d("RecommendApps", "[RecorderService.onStartCommand]Received start id " + startId + ": " + intent);
 
-
-        //TODO: SCREEN_ONであることをチェックする
-        execTask(startId);
-        scheduleNext();
+        if(isInteractive(this)) {
+            execTask(startId);
+            scheduleNext();
+        } else {
+            Log.d("RecommendApps", "[RecorderService.onStartCommand] Not Interactive. Stop Service.");
+            stopSelf();
+        }
         return START_STICKY;
+    }
+
+    public static boolean isInteractive(Context context) {
+        KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(KEYGUARD_SERVICE);
+        return !keyguardManager.inKeyguardRestrictedInputMode();
     }
 
     private void execTask(int startId) {
@@ -122,12 +134,16 @@ public class RecorderService extends Service {
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        if(!myLocationListener.available) {
-            usageHistory.update(db);
+        if(usageHistory != null) {
+            if (!myLocationListener.available) {
+                usageHistory.update(db);
+            } else {
+                double lat = myLocationListener.lat;
+                double lon = myLocationListener.lon;
+                usageHistory.update(db, lat, lon);
+            }
         } else {
-            double lat = myLocationListener.lat;
-            double lon = myLocationListener.lon;
-            usageHistory.update(db, lat, lon);
+            Log.d("RecommendApps", "[RecorderService.onDestroy] usageHistory was NULL.");
         }
         locationManager.removeUpdates(myLocationListener);
     }
