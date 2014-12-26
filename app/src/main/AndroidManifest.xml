@@ -13,7 +13,8 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="jp.thotta.android.recommendapps.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -51,6 +52,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+
+        <activity
+            android:name="jp.thotta.android.recommendapps.NoShowListActivity"
+            android:label="@string/title_activity_no_show_list" >
+        </activity>
     </application>
 
 </manifest>

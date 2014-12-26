@@ -19,12 +19,14 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.List;
 
 
 public class MainActivity extends Activity {
+    private static final int ITEM_ID = 0;
     private MainDBHelper dbHelper;
     private NoShowAppList noShowAppList;
 
@@ -42,24 +44,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        MyLocationListener myLocationListener = MyLocationListener.getStaticLocation(this);
-        double lat = 0.0;
-        double lon = 0.0;
-        if(myLocationListener.available) {
-            lat = myLocationListener.lat;
-            lon = myLocationListener.lon;
-        }
+
         ListView listView = (ListView) findViewById(R.id.listView);
-        List<AppInfo> appRanking = UsageHistory.getRanking(
-                dbHelper.getReadableDatabase(),
-                getPackageManager(),
-                lat,
-                lon
-        );
-        appRanking = filterNoShowApps(appRanking);
-        // TODO: Filter appRanking to delete Apps listed in No-Show list.(Use SharedPreferences);
-        AppInfoListAdaptor adaptor = new AppInfoListAdaptor(this, appRanking);
-        listView.setAdapter(adaptor);
+        showListView(listView);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -73,6 +60,34 @@ public class MainActivity extends Activity {
                 }
             }
         });
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                ListView lv = (ListView) parent;
+                AppInfo appInfo = (AppInfo) lv.getItemAtPosition(position);
+                showNoShowDialog(appInfo.packageName, "Add to No-Show List?");
+                return true;
+            }
+        });
+    }
+
+    private void showListView(ListView listView) {
+        MyLocationListener myLocationListener = MyLocationListener.getStaticLocation(this);
+        double lat = 0.0;
+        double lon = 0.0;
+        if(myLocationListener.available) {
+            lat = myLocationListener.lat;
+            lon = myLocationListener.lon;
+        }
+        List<AppInfo> appRanking = UsageHistory.getRanking(
+                dbHelper.getReadableDatabase(),
+                getPackageManager(),
+                lat,
+                lon
+        );
+        appRanking = filterNoShowApps(appRanking);
+        AppInfoListAdaptor adaptor = new AppInfoListAdaptor(this, appRanking);
+        listView.setAdapter(adaptor);
     }
 
     private List<AppInfo> filterNoShowApps(List<AppInfo> appRanking) {
@@ -98,7 +113,9 @@ public class MainActivity extends Activity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         noShowAppList.add(packageName);
-                        MainActivity.this.recreate();
+                        //MainActivity.this.recreate();
+                        ListView listView = (ListView) findViewById(R.id.listView);
+                        showListView(listView);
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -119,6 +136,7 @@ public class MainActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        menu.add(Menu.NONE, ITEM_ID, Menu.NONE, R.string.no_show_list);
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -132,6 +150,12 @@ public class MainActivity extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            return true;
+        }
+        if (id == ITEM_ID) {
+            //Toast.makeText(this, getString(R.string.no_show_list), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, NoShowListActivity.class);
+            startActivity(intent);
             return true;
         }
 
