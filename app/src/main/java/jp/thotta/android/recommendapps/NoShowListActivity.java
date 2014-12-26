@@ -44,7 +44,7 @@ public class NoShowListActivity extends Activity {
 
     private void showDelNoShowDialog(final String packageName, String dialogMessage) {
         new AlertDialog.Builder(NoShowListActivity.this)
-                .setTitle(dialogMessage)
+                .setTitle(dialogMessage + " : " + packageName)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
