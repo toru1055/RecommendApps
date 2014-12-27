@@ -39,14 +39,7 @@ public class MainActivity extends Activity {
         this.startService(new Intent(this, RegisterReceiverService.class));
         this.startService(new Intent(this, RecorderService.class));
         noShowAppList = new NoShowAppList(this);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
         ListView listView = (ListView) findViewById(R.id.listView);
-        showListView(listView);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -69,6 +62,13 @@ public class MainActivity extends Activity {
                 return true;
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ListView listView = (ListView) findViewById(R.id.listView);
+        showListView(listView);
     }
 
     private void showListView(ListView listView) {
