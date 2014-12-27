@@ -2,24 +2,16 @@ package jp.thotta.android.recommendapps;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -79,18 +71,21 @@ public class MainActivity extends Activity {
             lat = myLocationListener.lat;
             lon = myLocationListener.lon;
         }
+        UsageHistoryFilter filter = UsageHistoryFilter.createAutoFilter(
+                dbHelper.getReadableDatabase(), lat, lon);
         List<AppInfo> appRanking = UsageHistory.getRanking(
                 dbHelper.getReadableDatabase(),
                 getPackageManager(),
-                lat,
-                lon
+                filter
         );
-        appRanking = filterNoShowApps(appRanking);
+        appRanking = hideNoShowApps(appRanking);
         AppInfoListAdaptor adaptor = new AppInfoListAdaptor(this, appRanking);
         listView.setAdapter(adaptor);
+        TextView textView = (TextView) findViewById(R.id.textView);
+        textView.setText("Automatic Filter(" + filter.toString() + ")");
     }
 
-    private List<AppInfo> filterNoShowApps(List<AppInfo> appRanking) {
+    private List<AppInfo> hideNoShowApps(List<AppInfo> appRanking) {
         List<AppInfo> appRankingFiltered = new LinkedList<AppInfo>();
         for(AppInfo appInfo : appRanking) {
             if(!noShowAppList.isNoShow(appInfo.packageName)) {

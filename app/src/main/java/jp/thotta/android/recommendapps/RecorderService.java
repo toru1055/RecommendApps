@@ -19,6 +19,8 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
+import java.util.List;
+
 public class RecorderService extends Service {
     static final long DURATION_MILLS = 1000 * 10; // 10 sec.
     private MainDBHelper dbHelper;
@@ -68,7 +70,11 @@ public class RecorderService extends Service {
 
     private void execTask(int startId) {
         ActivityManager activityManager = (ActivityManager) getSystemService(Service.ACTIVITY_SERVICE);
+
         String packageName = activityManager.getRunningAppProcesses().get(0).processName;
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            packageName = activityManager.getRunningTasks(1).get(0).topActivity.getPackageName();
+        }
         packageName = packageName.replaceFirst(":.*$", "");
         double lat = myLocationListener.lat;
         double lon = myLocationListener.lon;

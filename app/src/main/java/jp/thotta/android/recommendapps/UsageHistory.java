@@ -76,9 +76,8 @@ public class UsageHistory {
         return new UsageHistory(rowId, packageName);
     }
 
-    public static List<AppInfo> getRanking(SQLiteDatabase db, PackageManager pm, double lat, double lon) {
-        UsageHistoryFilter filter = UsageHistoryFilter.createFilter(db, lat, lon);
-        if(filter.isSelectionNeeded()) {
+    public static List<AppInfo> getRanking(SQLiteDatabase db, PackageManager pm, UsageHistoryFilter filter) {
+        if(filter.isSelectionEnable()) {
             return getRankingWithFilter(db, pm, filter.getSelection());
         } else {
             return getOverallRanking(db, pm);

@@ -26,6 +26,32 @@ public class UsageHistoryFilter {
         this.lon = lon;
     }
 
+    @Override
+    public String toString() {
+        if(isSelectionEnable()) {
+            String filter = "";
+            String delim = "";
+            if (location) {
+                filter += "Location";
+            }
+            if (startHour) {
+                if (filter.length() > 0) {
+                    delim = " & ";
+                }
+                filter = filter + delim + "Time";
+            }
+            if (weekday) {
+                if (filter.length() > 0) {
+                    delim = " & ";
+                }
+                filter = filter + delim + "Weekday";
+            }
+            return filter;
+        } else {
+            return "Overall Ranking";
+        }
+    }
+
     public String getSelection() {
         String selection = "WHERE 1 = 1 ";
         if(location) {
@@ -41,11 +67,11 @@ public class UsageHistoryFilter {
         return selection;
     }
 
-    public boolean isSelectionNeeded() {
+    public boolean isSelectionEnable() {
         return (location||startHour||weekday);
     }
 
-    public static UsageHistoryFilter createFilter(SQLiteDatabase db, double lat, double lon) {
+    public static UsageHistoryFilter createAutoFilter(SQLiteDatabase db, double lat, double lon) {
         boolean location = false;
         boolean startHour = false;
         boolean weekday = false;
