@@ -58,6 +58,10 @@
             android:name="jp.thotta.android.recommendapps.NoShowListActivity"
             android:label="@string/title_activity_no_show_list" >
         </activity>
+        <activity
+            android:name="jp.thotta.android.recommendapps.SettingActivity"
+            android:label="@string/title_activity_setting" >
+        </activity>
     </application>
 
 </manifest>

@@ -21,6 +21,7 @@ public class MainActivity extends Activity {
     private static final int ITEM_ID = 0;
     private MainDBHelper dbHelper;
     private NoShowAppList noShowAppList;
+    private FilterSetting filterSetting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +32,7 @@ public class MainActivity extends Activity {
         this.startService(new Intent(this, RegisterReceiverService.class));
         this.startService(new Intent(this, RecorderService.class));
         noShowAppList = new NoShowAppList(this);
+        filterSetting = new FilterSetting(this);
         ListView listView = (ListView) findViewById(R.id.listView);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -71,18 +73,32 @@ public class MainActivity extends Activity {
             lat = myLocationListener.lat;
             lon = myLocationListener.lon;
         }
-        UsageHistoryFilter filter = UsageHistoryFilter.createAutoFilter(
-                dbHelper.getReadableDatabase(), lat, lon);
+        TextView textView = (TextView) findViewById(R.id.textView);
+
+        UsageHistoryFilter usageHistoryFilter;
+        if(filterSetting.isManual()) {
+            usageHistoryFilter =  new UsageHistoryFilter(
+                    filterSetting.isLocation(),
+                    filterSetting.isTime(),
+                    filterSetting.isWeekday(),
+                    lat,
+                    lon
+            );
+            textView.setText("Manual Filter(" + usageHistoryFilter.toString() + ")");
+        } else {
+            usageHistoryFilter = UsageHistoryFilter.createAutoFilter(
+                    dbHelper.getReadableDatabase(), lat, lon);
+            textView.setText("Automatic Filter(" + usageHistoryFilter.toString() + ")");
+        }
         List<AppInfo> appRanking = UsageHistory.getRanking(
                 dbHelper.getReadableDatabase(),
                 getPackageManager(),
-                filter
+                usageHistoryFilter
         );
         appRanking = hideNoShowApps(appRanking);
         AppInfoListAdaptor adaptor = new AppInfoListAdaptor(this, appRanking);
         listView.setAdapter(adaptor);
-        TextView textView = (TextView) findViewById(R.id.textView);
-        textView.setText("Automatic Filter(" + filter.toString() + ")");
+
     }
 
     private List<AppInfo> hideNoShowApps(List<AppInfo> appRanking) {
@@ -145,6 +161,8 @@ public class MainActivity extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingActivity.class);
+            startActivity(intent);
             return true;
         }
         if (id == ITEM_ID) {

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Recommend Apps</string>
+    <string name="app_name">App Jumper!</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="no_show_list">No-Show List</string>
     <string name="title_activity_no_show_list">NoShowListActivity</string>
+    <string name="title_activity_setting">SettingActivity</string>
 
 </resources>
