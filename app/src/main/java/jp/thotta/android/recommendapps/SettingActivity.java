@@ -6,6 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -46,6 +47,8 @@ public class SettingActivity extends Activity {
         time.setOnClickListener(checkBoxClickListener);
         weekday.setOnClickListener(checkBoxClickListener);
         showSettings();
+        FrameLayout adFrameLayout = (FrameLayout) findViewById(R.id.layout_ad_frame);
+        Utility.appendAdView(SettingActivity.this, adFrameLayout);
     }
 
     private void showSettings() {

@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 
 import java.util.List;
@@ -34,6 +35,8 @@ public class NoShowListActivity extends Activity {
                 showDelNoShowDialog(appInfo.packageName, "Delete from No-Show List?");
             }
         });
+        FrameLayout adFrameLayout = (FrameLayout) findViewById(R.id.layout_ad_frame);
+        Utility.appendAdView(NoShowListActivity.this, adFrameLayout);
     }
 
     private void showListView(ListView listView) {
