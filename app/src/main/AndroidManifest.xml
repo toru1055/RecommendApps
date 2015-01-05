@@ -39,7 +39,7 @@
             android:exported="true" >
         </service>
 
-        <uses-permission android:name="android.permission.GET_TASKS" />
+
 
         <service
             android:name="jp.thotta.android.recommendapps.RegisterReceiverService"

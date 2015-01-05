@@ -13,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -72,11 +73,18 @@ public class MainActivity extends Activity {
         MyLocationListener myLocationListener = MyLocationListener.getStaticLocation(this);
         double lat = 0.0;
         double lon = 0.0;
+        String address = "---";
         if(myLocationListener.available) {
             lat = myLocationListener.lat;
             lon = myLocationListener.lon;
+            if(address != null) {
+                address = myLocationListener.getAddress(this);
+            }
         }
+
         TextView textView = (TextView) findViewById(R.id.textView);
+        TextView locationTextView = (TextView) findViewById(R.id.locationTextView);
+
 
         UsageHistoryFilter usageHistoryFilter;
         if(filterSetting.isManual()) {
@@ -92,6 +100,11 @@ public class MainActivity extends Activity {
             usageHistoryFilter = UsageHistoryFilter.createAutoFilter(
                     dbHelper.getReadableDatabase(), lat, lon);
             textView.setText("Automatic Filter(" + usageHistoryFilter.toString() + ")");
+        }
+        if(usageHistoryFilter.isLocation()) {
+            locationTextView.setText("Location=" + address);
+        } else {
+            locationTextView.setText(" ");
         }
         List<AppInfo> appRanking = UsageHistory.getRanking(
                 dbHelper.getReadableDatabase(),

@@ -26,6 +26,10 @@ public class UsageHistoryFilter {
         this.lon = lon;
     }
 
+    public boolean isLocation() {
+        return location;
+    }
+
     @Override
     public String toString() {
         if(isSelectionEnable()) {

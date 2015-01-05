@@ -2,13 +2,19 @@ package jp.thotta.android.recommendapps;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Address;
 import android.location.Criteria;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
 import android.util.Log;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by thotta on 14/12/26.
@@ -48,6 +54,27 @@ public class MyLocationListener implements LocationListener {
             editor.putFloat(KEY_LON, (float) lon);
             editor.commit();
         }
+    }
+
+    public String getAddress(Context context) {
+        //StringBuffer strAddress = new StringBuffer();
+        String strAddress = null;
+        Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+        try {
+            List<Address> addressList = geocoder.getFromLocation(lat, lon, 1);
+            for(Address address : addressList) {
+                strAddress = address.getLocality() + ", " +
+                        address.getSubLocality() + ", " +
+                        address.getThoroughfare();
+                Log.d("RecommendApps", "[getAddress] toString: " + address.toString());
+                Log.d("RecommendApps", "[getAddress] getLocality: " + address.getLocality());
+                Log.d("RecommendApps", "[getAddress] getSubLocality: " + address.getSubLocality());
+                Log.d("RecommendApps", "[getAddress] getThoroughfare: " + address.getThoroughfare());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return strAddress;
     }
 
     private void read() {
